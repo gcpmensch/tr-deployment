@@ -1,0 +1,68 @@
+# Deployment of Nginx
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  namespace: website
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: html
+          mountPath: /usr/share/nginx/html
+      volumes:
+      - name: html
+        persistentVolumeClaim:
+          claimName: html-pvc
+
+---
+# PVC for index.html
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: html-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: standard # This is the default storage class for GKE
+---
+  initContainers:
+- name: website-content
+  image: alpine/git
+  command:
+  - /bin/sh
+  - -c
+  - |
+    git clone https://github.com/gcpmensch/tr-001.git
+    cp . /usr/share/nginx/html
+    
+---
+# LoadBalancer service for Nginx
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+  namespace: website
+spec:
+  selector:
+    app: nginx
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  type: LoadBalancer
