@@ -14,6 +14,15 @@ spec:
       labels:
         app: nginx
     spec:
+      initContainers:
+      - name: website-content
+        image: alpine/git
+        command: ["/bin/sh", "-c"]
+        args:
+        ["git clone https://github.com/gcpmensch/tr-001.git && cp . /usr/share/nginx/html"]
+        volumeMounts:  
+        - name: html
+          mountPath: "/usr/share/nginx/html"
       containers:
       - name: nginx
         image: nginx:latest
@@ -41,17 +50,7 @@ spec:
       storage: 1Gi
   storageClassName: standard # This is the default storage class for GKE
 ---
-  initContainers:
-- name: website-content
-  image: alpine/git
-  command:
-  - /bin/sh
-  - -c
-  - |
-    git clone https://github.com/gcpmensch/tr-001.git
-    cp . /usr/share/nginx/html
-    
----
+
 # LoadBalancer service for Nginx
 apiVersion: v1
 kind: Service
