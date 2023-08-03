@@ -18,7 +18,7 @@ spec:
       - name: website-content
         image: alpine/git
         command: ["/bin/sh", "-c"]
-        args: ["git clone https://github.com/gcpmensch/tr-001.git && cp /tr-001 /usr/share/nginx/html"]
+        args: ["git clone https://github.com/gcpmensch/tr-001.git && cp /tr-001/* /usr/share/nginx/html"]
         volumeMounts:  
         - name: html
           mountPath: "/usr/share/nginx/html"
