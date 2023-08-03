@@ -34,6 +34,20 @@ spec:
       - name: html
         persistentVolumeClaim:
           claimName: html-pvc
+---
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: html-pv
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  gcePersistentDisk:
+    pdName: nginx-html
+    fsType: ext4
 
 ---
 # PVC for index.html
@@ -47,6 +61,7 @@ spec:
   resources:
     requests:
       storage: 1Gi
+  volumeName: html-pv
   storageClassName: standard # This is the default storage class for GKE
 ---
 
