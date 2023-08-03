@@ -18,15 +18,15 @@ spec:
       - name: website-content
         image: alpine/git
         command: ["/bin/sh", "-c"]
-        args: ["git clone https://github.com/gcpmensch/tr-001.git && cp /tr-001/* /usr/share/nginx/html"]
+        args: ["git clone https://github.com/gcpmensch/tr-001.git && cp -r tr-001/* /usr/share/nginx/html/"]
         volumeMounts:  
         - name: html
-          mountPath: "/usr/share/nginx/html"
+          mountPath: "/usr/share/nginx/html"          
       containers:
       - name: nginx
         image: nginx:latest
         ports:
-        - containerPort: 8080
+        - containerPort: 80
         volumeMounts:
         - name: html
           mountPath: /usr/share/nginx/html
@@ -35,33 +35,36 @@ spec:
         persistentVolumeClaim:
           claimName: html-pvc
 
+
 ---
+
 # PVC for index.html
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: html-pvc
+  namespace: website
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 1Gi
-  volumeName: html-pvc
-  storageClassName: standard # This is the default storage class for GKE
+      storage: 8Gi
+  storageClassName: standard-rwo # This is the default storage class for GKE
+
 ---
 
 # LoadBalancer service for Nginx
 apiVersion: v1
 kind: Service
 metadata:
-  name: nginx-service
+  name: nginx-loadbalancer
   namespace: website
 spec:
   selector:
     app: nginx
   ports:
   - protocol: TCP
-    port: 8080
+    port: 80
     targetPort: 80
   type: LoadBalancer
